@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Ramsey\Uuid\Uuid;
 use elkadrey\FiskalyLaravel\Responses\Response;
+use Illuminate\Http\Request as HttpRequest;
 
 class Request
 {
@@ -21,9 +22,10 @@ class Request
         $this->setUrl($url);
     }
 
-    public function make(string $method, string $url, array|Collection $params = [], string $Response = null):? object
+    public function make(string $method, string $url, array|Collection|HttpRequest $params = [], string $Response = null):? object
     {
-        switch(explode("_", $this->methodName)[0])
+        $methods = explode("_", $this->methodName);
+        switch($methods[0])
         {
             case 'uuid':
             case 'guid':
@@ -31,12 +33,13 @@ class Request
                 if(substr($url[0], strlen($url[0]) - 1, 1) != "/") $url[0] .= "/";
                 $url[0] .= $this->getUUID();
                 $url = implode("?", $url);
+                $method = $methods[1]; 
                 break;
         }
 
         $this->methodName = null;
         
-        $results = Http::withHeaders($this->headers)->withoutVerifying()->{$method}($this->mainURL.$url, is_a($params, Collection::class) ? $params->toArray() : $params);
+        $results = Http::withHeaders($this->headers)->withoutVerifying()->{$method}($this->mainURL.$url, !is_array($params) ? $params->toArray() : $params);
         $results->throw();
         if(!$Response) $Response = Response::class;
         return new $Response($results);
@@ -60,6 +63,11 @@ class Request
     public function addHeader(string $name, $value)
     {
         $this->headers[$name] = $value;
+    }
+
+    public function getHeader(string $key = null)
+    {
+        return $key ? ($this->headers[$key] ?? null) : $this->headers;
     }
 
     public function resetHeaders()
