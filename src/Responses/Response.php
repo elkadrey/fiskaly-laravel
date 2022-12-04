@@ -11,8 +11,8 @@ use ArrayIterator;
 
 class Response implements ArrayAccess
 {
-    private ?Collection $items = null;
-    private ?ClientResponse $response = null;
+    protected ?Collection $items = null;
+    protected ?ClientResponse $response = null;
     public function __construct(?ClientResponse $response = null)
     {
         if($response) $this->setResponse($response);
@@ -34,14 +34,14 @@ class Response implements ArrayAccess
         return is_string($item) && (Str::is("{*}", trim($item)) || Str::is("[*]", trim($item)));
     }
 
-    public function getResponse(): ClientResponse
+    public function getResponse():? ClientResponse
     {
         return $this->response;
     }
 
     public function __get($key)
     {
-        return $this->get($key);
+        return $this->items->get($key);
     }
 
     public function __call($name, $arguments)

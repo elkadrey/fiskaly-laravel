@@ -35,8 +35,8 @@ class Request
         }
 
         $this->methodName = null;
+        
         $results = Http::withHeaders($this->headers)->withoutVerifying()->{$method}($this->mainURL.$url, is_a($params, Collection::class) ? $params->toArray() : $params);
-
         $results->throw();
         if(!$Response) $Response = Response::class;
         return new $Response($results);

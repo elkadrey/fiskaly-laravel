@@ -3,7 +3,9 @@
 namespace elkadrey\FiskalyLaravel\Responses;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Client\Response as ClientResponse;
+use Illuminate\Support\Str;
 
 class AuthResponse extends Response
 {
@@ -14,7 +16,7 @@ class AuthResponse extends Response
     public function __construct(?ClientResponse $response = null)
     {
         parent::__construct($response);
-        $this->setToken($this->get("access_token"), $this->get("access_token_expires_at"));
+        $this->setToken($this->access_token, $this->access_token_expires_at);
     }
 
     public function setToken(?string $token = null, ?int $expireAt = 0)
@@ -35,5 +37,11 @@ class AuthResponse extends Response
     public function isAlive()
     {
         return $this->tokenExpire && Carbon::now()->isBefore($this->tokenExpire);
+    }
+
+    public function __call($name, $arguments)
+    {      
+        if(isset($this->{$methodName = Str::lower(substr($name, 3))})) return $this->{$methodName};
+        else parent::__call($name, $arguments);
     }
 }

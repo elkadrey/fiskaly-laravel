@@ -34,11 +34,12 @@ class FiskalyLaravelClient
     public function setConfig(array $config)
     {
         $this->config = $this->config->merge($config);
+        
         if(($token = $this->config->get("token")) && is_string($token) && ($token_expire_at = $this->config->get("token_expire_at")) && is_int($token_expire_at))
         {
             $this->token = new AuthResponse();
             $this->token->setToken($token, $token_expire_at);
-        }
+        }        
     }
 
     public function getConfig()
@@ -63,14 +64,15 @@ class FiskalyLaravelClient
 
     protected function checkConfig()
     {
-        if(!$this->config || !$this->config->has(['api_key', 'api_secret', 'baseUrl']) || $this->config->filter(function($val)
+        if(!$this->config || !$this->config->has(['api_key', 'api_secret', 'baseUrl']) || $this->config->filter(function($val, $key)
         {
-            return empty($val);
+            return empty($val) && !in_array($key, ['token', 'token_expire_at']);
         })->count() > 0) throw new Exception("Missing configurations error !", 422);
     }
 
     public function MakeAuth()
     {
-        $this->token = $this->request()->post("auth", $this->config->only(["api_key", "api_secret"]), AuthResponse::class);        
+        return $this->token = $this->request()->post("auth", $this->config->only(["api_key", "api_secret"]), AuthResponse::class);        
     }
+    
 }
