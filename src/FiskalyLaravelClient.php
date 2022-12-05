@@ -92,6 +92,11 @@ class FiskalyLaravelClient
         })->count() > 0) throw new Exception("Missing configurations error !", 422);
     }
 
+    public function getUUID()
+    {
+        return $this->request()->getUUID();
+    }
+
     public function MakeAuth()
     {
         $this->token = $this->make("auth", $this->config->only(["api_key", "api_secret"]), "post", AuthResponse::class);
