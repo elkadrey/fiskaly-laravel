@@ -4,7 +4,7 @@ The fiskaly SDK is a HTTP Laravel client that is needed for accessing the kassen
 
 ### Requirements
 PHP 8.0+
-Laravel/Lumen 8+
+Laravel or Lumen 8+
 
 ## Integration
 
