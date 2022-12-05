@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\Response;
+use elkadrey\FiskalyLaravel\Responses\Response;
 use elkadrey\FiskalyLaravel\Responses\AuthResponse;
 
 class FiskalyLaravelClient
