@@ -104,7 +104,7 @@ class FiskalyLaravelClient
         if(!$this->token || !$this->token->isAlive())
         {
             if($this->token && !$this->token->isAlive()) $this->makeLog("Make TSE Token", ["message" => "Token expired"], 1);
-            $this->token = $this->make("auth", $this->config->only(["api_key", "api_secret"]), "post", AuthResponse::class);
+            $this->token = $this->make("auth", $this->config->only(["api_key", "api_secret"]), false, "post", AuthResponse::class);
             $this->makeLog("Make TSE Token", ["message" => "New token created"], 2);
         }
         else $this->makeLog("Make TSE Token", ["message" => "Using the exists token"], 2);
@@ -163,25 +163,31 @@ class FiskalyLaravelClient
         return $this->token;
     }
 
-    public function make(string $path, array|Collection|HttpRequest $params = [], string $method = "post", $responseClass = null)
+    public function make(string $path, array|Collection|HttpRequest $params = [], bool $uuid = false, string $method = "post", $responseClass = null)
     {
         if($this->token && $this->token->isAlive()) $this->request()->setToken($this->token->getToken());
+        $this->makeLog("TSS API", compact('path', 'params'), "2");
+        if($uuid)
+        {
+            $url = explode("?", $path);
+            $url[0] .= "/".$this->request()->getUUID();
+            $path = implode("?", $url);
+        }
         $results = $this->request()->{Str::lower($method)}($path, $params, $responseClass);   
-        $this->makeLog("TSS API", is_a($results, Response::class) ? $results->toArray() : [$results], "2");
+        $this->makeLog("TSS API Results", is_a($results, Response::class) ? $results->toArray() : [$results], "2");
         return $results;
     }
     
 
     public function __call($name, $arguments)
     {
-        $params = explode("_", Str::lower($name));
+        $args = explode("?", Str::lower($name));
+        $params = explode("_", $args[0]);
         if(in_array($params[0], ["get", "post", "put", "patch", "delete"]))
         {
             $method = $params[0];
-            unset($params[0]);
-
-            if(!empty($arguments[1]) && $arguments[1] === true) $method = "uuid_$method";
-            return $this->make(implode("/", $params), $arguments[0] ?? [], $method);
+            unset($params[0]);            
+            return $this->make(implode("/", $params).(!empty($args[1]) ? "?".$args[1] : ""), $arguments[0] ?? [],  $arguments[1] ?? false, $method);
         }
         else throw new Exception("The method $name dosn't exists !", 400);
     }

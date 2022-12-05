@@ -98,7 +98,8 @@ class Controller extends BaseController
         {
             //create a ready INITIALIZED TSS (5 steps in one)
             set_time_limit(0);
-            return JsonResource::make($this->client->createTSS($request->metadata));
+            $results = $this->client->createTSS($request->metadata);
+            return JsonResource::make($results);
         }
         catch(Exception $e)
         {
@@ -179,7 +180,26 @@ public function addClient(string $tssid, Request $request)
         $info = compact('serial_number', 'metadata');
 
         //API => method:PUT /tss/{tssid}/client/{guid}
-        return JsonResource::make($this->client->{"put_tss_$tssid"."_client_$guid"}($info));
+        $results = $this->client->{"put_tss_$tssid"."_client_$guid"}($info);
+        return JsonResource::make($results);
+    }
+    catch(Exception $e)
+    {
+        //Your exception code here
+    }
+}
+```
+
+#### example 4: Start Transaction
+
+```php
+public function startTransaction(string $tssid, string $clientid)
+{
+    try
+    {
+        //API => method:PUT /tss/{{tssId}}/tx/{{$guid}}?tx_revision=1
+        $results = $this->client->{"put_tss_$tssid"."_tx?tx_revision=1"}(["state" => "ACTIVE", "client_id" => $clientid], true);
+        return JsonResource::make($results);
     }
     catch(Exception $e)
     {
