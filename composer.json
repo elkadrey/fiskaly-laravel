@@ -14,9 +14,7 @@
         }
     ],
     "require": {
-        "php": "^8.0",
-        "illuminate/http": "~9",
-        "illuminate/collections": "~9",
+        "php": ">=8.0",
         "ramsey/uuid": "^4.6"
     },
     "autoload": {
