@@ -108,7 +108,7 @@ class Controller extends BaseController
 }
 ```
 
-#### custom API usage
+#### Custom API usage
 To call api like for example: "/tss/{{tssId}}/client/{{$guid}} with method: put" just call the method in the first function then use "_" to spirite the api slashs "/" 
 and provide the params data as array, request or collection and the arrangement is boolean in case you want to add GUID automatically for example:
 ```php

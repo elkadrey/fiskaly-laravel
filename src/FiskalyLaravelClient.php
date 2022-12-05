@@ -2,12 +2,14 @@
 
 namespace elkadrey\FiskalyLaravel;
 
-use elkadrey\FiskalyLaravel\Responses\AuthResponse;
+
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\Response;
+use elkadrey\FiskalyLaravel\Responses\AuthResponse;
 
 class FiskalyLaravelClient
 {
@@ -97,19 +99,30 @@ class FiskalyLaravelClient
         return $this->request()->getUUID();
     }
 
-    public function MakeAuth()
+    public function MakeAuth(bool $force = false)
     {
-        $this->token = $this->make("auth", $this->config->only(["api_key", "api_secret"]), "post", AuthResponse::class);
+        if(!$this->token || !$this->token->isAlive())
+        {
+            if($this->token && !$this->token->isAlive()) $this->makeLog("Make TSE Token", ["message" => "Token expired"], 1);
+            $this->token = $this->make("auth", $this->config->only(["api_key", "api_secret"]), "post", AuthResponse::class);
+            $this->makeLog("Make TSE Token", ["message" => "New token created"], 2);
+        }
+        else $this->makeLog("Make TSE Token", ["message" => "Using the exists token"], 2);
+        return $this->token;
     }
 
     public function changeAdminPin(string $tssid, string $admin_puk, string $new_admin_pin)
     {
-        return $this->{"patch_tss_$tssid"."_admin"}(compact('admin_puk', 'new_admin_pin'));
+        $results = $this->{"patch_tss_$tssid"."_admin"}(compact('admin_puk', 'new_admin_pin'));
+        $this->makeLog("Change admin pin", ["message" => "Admin pin has been changed", compact('admin_puk', 'new_admin_pin')], 2);
+        return $results;
     }
 
     public function adminAuth(string $tssid, string $admin_pin)
     {
-        return $this->{"post_tss_$tssid"."_admin_auth"}(compact('admin_pin'));
+        $results = $this->{"post_tss_$tssid"."_admin_auth"}(compact('admin_pin'));
+        $this->makeLog("Admin Auth", [compact('admin_pin')], 2);
+        return $results;
     }
 
     public function createTSS(array $metaData, string $adminPin = null)
@@ -134,7 +147,7 @@ class FiskalyLaravelClient
                 //4- Change state to INITIALIZED
                 $this->{"patch_tss_$tss->_id"}(["state" => "INITIALIZED"]);                
                 $tss->put("state", "INITIALIZED");
-                $this->makeLog("Create TSS Success", ["tss" => $tss->toArray(), ...compact('adminpin')], "2");    
+                $this->makeLog("Create TSS Success", ["tss" => $tss->toArray(), ...compact('adminpin')], "2");
                 return $tss;
             }
         }
@@ -152,12 +165,10 @@ class FiskalyLaravelClient
 
     public function make(string $path, array|Collection|HttpRequest $params = [], string $method = "post", $responseClass = null)
     {
-        
-        if($this->token && $this->token->isAlive())
-        {
-            $this->request()->setToken($this->token->getToken());
-        }
-        return $this->request()->{Str::lower($method)}($path, $params, $responseClass);   
+        if($this->token && $this->token->isAlive()) $this->request()->setToken($this->token->getToken());
+        $results = $this->request()->{Str::lower($method)}($path, $params, $responseClass);   
+        $this->makeLog("TSS API", is_a($results, Response::class) ? $results->toArray() : [$results], "2");
+        return $results;
     }
     
 
