@@ -174,7 +174,7 @@ class FiskalyLaravelClient
             $path = implode("?", $url);
         }
         $results = $this->request()->{Str::lower($method)}($path, $params, $responseClass);   
-        $this->makeLog("TSS API Results", is_a($results, Response::class) ? $results->toArray() : [$results], "2");
+        $this->makeLog("TSS API Results", is_a($results, Response::class) ? $results->toArray() ?? [] : [$results], "2");
         return $results;
     }
     
