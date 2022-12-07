@@ -12,7 +12,7 @@ Laravel or Lumen 8+
 
 The PHP SDK is available for a download via [Composer](https://getcomposer.org/).
 
-Packagist - [Package Repository](https://packagist.org/packages/fiskaly/fiskaly-sdk-php).
+Packagist - [Package Repository](https://packagist.org/packages/elkadrey/fiskaly-laravel).
 
 Simply execute this command from the shell in your project directory:
 
