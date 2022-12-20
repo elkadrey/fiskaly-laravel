@@ -127,6 +127,7 @@ class FiskalyLaravelClient
 
     public function createTSS(array $metaData, string $adminPin = null)
     {
+        $tss = null;
         try
         {
             $tss = $this->put_tss($metaData, true);
@@ -153,7 +154,7 @@ class FiskalyLaravelClient
         }
         catch(Exception $e)
         {
-            $this->makeLog("Create TSS Error", ["tss" => $tss->toArray(), ...compact('adminpin')], "0");
+            $this->makeLog("Create TSS Error", ["tss" => $tss ? $tss->toArray() : null, ...compact('adminpin')], "0");
             throw new Exception($e->getMessage(), 400);
         }
     }
