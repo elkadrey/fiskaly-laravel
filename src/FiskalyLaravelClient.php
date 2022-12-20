@@ -128,6 +128,7 @@ class FiskalyLaravelClient
     public function createTSS(array $metaData, string $adminPin = null)
     {
         $tss = null;
+        $adminpin = null;
         try
         {
             $tss = $this->put_tss($metaData, true);
